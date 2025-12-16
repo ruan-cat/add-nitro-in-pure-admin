@@ -3,7 +3,7 @@
  * @description 基于 TanStack Query 的列表数据获取 Hook，提供统一的分页、筛选、缓存功能
  */
 
-import { useQuery, type UseQueryReturnType } from "@tanstack/vue-query";
+import { useQuery, useMutation, type UseQueryReturnType, keepPreviousData } from "@tanstack/vue-query";
 import { ref, computed, watch, type Ref, type ComputedRef } from "vue";
 import { http } from "@/utils/http";
 
@@ -169,6 +169,7 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 			);
 		},
 		enabled: enabled as boolean,
+		placeholderData: keepPreviousData,
 		staleTime,
 	});
 
@@ -225,6 +226,7 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 	 * @description
 	 */
 	async function doFetch() {
+		console.log("doFetch", queryParams.value);
 		await tanStackQueryObject.refetch();
 	}
 
