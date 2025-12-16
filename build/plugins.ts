@@ -15,6 +15,9 @@ import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
 import { codeInspectorPlugin } from "code-inspector-plugin";
 import { vitePluginFakeServer } from "vite-plugin-fake-server";
 
+// 将项目一下子变成nuxt全栈项目的插件
+import { nitro } from "nitro/vite";
+
 export function getPluginsList(VITE_CDN: boolean, VITE_COMPRESSION: ViteCompression): PluginOption[] {
 	const lifecycle = process.env.npm_lifecycle_event;
 	return [

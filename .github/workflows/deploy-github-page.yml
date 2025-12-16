@@ -55,7 +55,7 @@ jobs:
         run: pnpm install
 
       - name: 打包项目
-        run: pnpm run build
+        run: pnpm run build:github
 
       - name: 设置github pages
         uses: actions/configure-pages@v4
@@ -63,7 +63,7 @@ jobs:
       - name: 上传打包产物
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "dist"
+          path: "./.output/public"
 
       - name: 部署到github pages
         id: deployment
