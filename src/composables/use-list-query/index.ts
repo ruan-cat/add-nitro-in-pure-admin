@@ -111,7 +111,7 @@ const DEFAULT_PAGE_INDEX = 1;
 export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 	options: UseListQueryOptions<TItem, TParams>,
 ): UseListQueryReturn<TItem, TParams> {
-	const { queryKeyPrefix, apiUrl, initialParams, enabled = false, staleTime = 5 * 60 * 1000 } = options;
+	const { queryKeyPrefix, apiUrl, initialParams, enabled = true, staleTime = 5 * 60 * 1000 } = options;
 
 	/** 初始参数对象 */
 	const defaultParams: TParams = {
@@ -142,7 +142,7 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 		get: () => queryParams.value.pageSize,
 		set: (val) => {
 			queryParams.value.pageSize = val;
-			queryParams.value.pageIndex = DEFAULT_PAGE_INDEX;
+			// queryParams.value.pageIndex = DEFAULT_PAGE_INDEX;
 		},
 	});
 
@@ -157,6 +157,7 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 	/** TanStack Query 查询 */
 	const tanStackQueryObject = useQuery({
 		queryKey: queryKey.value,
+		// queryKey: [queryKeyPrefix, queryParams.value.pageIndex, queryParams.value.pageSize],
 		queryFn: async (): Promise<JsonVO<PageDTO<TItem>>> => {
 			const response = await http.post<JsonVO<PageDTO<TItem>>, TParams>(apiUrl, { data: queryParams.value });
 			return (
@@ -173,13 +174,28 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 		staleTime,
 	});
 
+	const { data, isLoading, isError, isFetching, error } = tanStackQueryObject;
+
+	/** 监听数据变化，更新表格数据 */
+	watch(
+		data,
+		(newData) => {
+			if (newData?.code === 200 && newData.data) {
+				tableData.value = newData.data.list || [];
+				total.value = newData.data.total || 0;
+				// console.log("数据变化了 更新表格数据", tableData.value, total.value);
+			}
+		},
+		{ immediate: true, deep: true },
+	);
+
+	// watch(  );
 	// tanStackQueryObject.  ((data) => {
 	//   if (data?.code === 200 && data.data) {
 	//     tableData.value = data.data.list || [];
 	//     total.value = data.data.total || 0;
 	//   }
 	// });
-
 	/** 监听参数变化时更新 queryKey */
 	// 不再主动根据参数变化做处理 要求用户自己主动调用
 	// watch(
@@ -189,20 +205,6 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 	// 		query.refetch();
 	// 	},
 	// 	{ deep: true },
-	// );
-
-	// 不再主动根据参数变化做处理 要求用户自己主动调用
-	/** 监听数据变化，更新表格数据 */
-	// watch(
-	// 	() => query.data.value,
-	// 	(newData) => {
-	// 		if (newData?.code === 200 && newData.data) {
-	// 			tableData.value = newData.data.list || [];
-	// 			total.value = newData.data.total || 0;
-	// 			console.log("数据变化了 更新表格数据", tableData.value, total.value);
-	// 		}
-	// 	},
-	// 	{ immediate: true, deep: true },
 	// );
 
 	/** 更新查询参数 */
@@ -226,7 +228,7 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 	 * @description
 	 */
 	async function doFetch() {
-		console.log("doFetch", queryParams.value);
+		// console.log("doFetch", queryParams.value);
 		await tanStackQueryObject.refetch();
 	}
 
@@ -237,9 +239,9 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 		pageSize: pageSize as unknown as Ref<number>,
 		totalPages,
 		queryParams,
-		isLoading: tanStackQueryObject.isLoading,
-		isFetching: tanStackQueryObject.isFetching,
-		error: tanStackQueryObject.error,
+		isLoading,
+		isFetching,
+		error,
 		doFetch,
 		updateParams,
 		resetParams,

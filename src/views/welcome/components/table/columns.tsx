@@ -118,7 +118,6 @@ export function useColumns() {
 	}
 
 	onMounted(async () => {
-		// await delay(600);
 		await doFetch();
 		pagination.value.total = total.value;
 	});
