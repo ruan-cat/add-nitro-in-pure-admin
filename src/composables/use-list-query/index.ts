@@ -176,6 +176,7 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 	watch(
 		queryParams,
 		() => {
+			console.log("参数变化了 开始请求", queryParams.value);
 			query.refetch();
 		},
 		{ deep: true },
@@ -188,9 +189,10 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 			if (newData?.code === 200 && newData.data) {
 				tableData.value = newData.data.list || [];
 				total.value = newData.data.total || 0;
+				console.log("数据变化了 更新表格数据", tableData.value, total.value);
 			}
 		},
-		{ immediate: true },
+		{ immediate: true, deep: true },
 	);
 
 	/** 更新查询参数 */

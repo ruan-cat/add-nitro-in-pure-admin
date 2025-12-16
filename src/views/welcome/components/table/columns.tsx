@@ -88,22 +88,35 @@ export function useColumns() {
 	];
 
 	/** 分页配置 */
-	const pagination = reactive<PaginationProps>({
-		pageSize: pageSize.value,
-		currentPage: pageIndex.value,
-		layout: "prev, pager, next",
+	const pagination = ref<PaginationProps>({
+		// currentPage: pageIndex.value,
+		// pageSize: pageSize.value,
+		currentPage: 2,
+		pageSize: 7,
 		total: total.value,
-		align: "center",
+		// FIXME: 页码数目不对
+		// total: 200,
+
+		// layout: "prev, pager, next",
+		size: "default",
+		pageSizes: [10, 15, 20, 50, 100],
+		align: "right",
+		background: true,
 	});
 
 	function onCurrentChange(page: number) {
 		console.log("onCurrentChange", page);
-		updateParams({ pageIndex: page });
+		updateParams({ pageIndex: page, pageSize: pagination.value.pageSize });
+		refetch();
+	}
+
+	function onSizeChange(size: number) {
+		updateParams({ pageIndex: pagination.value.currentPage, pageSize: size });
 		refetch();
 	}
 
 	onMounted(() => {
-		pagination.total = total.value;
+		pagination.value.total = total.value;
 	});
 
 	return {
@@ -113,5 +126,6 @@ export function useColumns() {
 		dataList,
 		pagination,
 		onCurrentChange,
+		onSizeChange,
 	};
 }

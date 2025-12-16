@@ -2,7 +2,7 @@
 import { useColumns } from "./columns";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
-const { loading, columns, dataList, pagination, Empty, onCurrentChange } = useColumns();
+const { loading, columns, dataList, pagination, Empty, onCurrentChange, onSizeChange } = useColumns();
 </script>
 
 <template>
@@ -12,12 +12,11 @@ const { loading, columns, dataList, pagination, Empty, onCurrentChange } = useCo
 		showOverflowTooltip
 		:loading="loading"
 		:loading-config="{ background: 'transparent' }"
-		:data="
-			dataList.slice((pagination.currentPage - 1) * pagination.pageSize, pagination.currentPage * pagination.pageSize)
-		"
+		:data="dataList"
 		:columns="columns"
 		:pagination="pagination"
 		@page-current-change="onCurrentChange"
+		@page-size-change="onSizeChange"
 	>
 		<template #empty>
 			<el-empty description="暂无数据" :image-size="60">
