@@ -29,7 +29,7 @@ export function useColumns() {
 	});
 
 	const dataList = tableData;
-	const loading = isLoading;
+	const loading = isFetching;
 
 	const columns: TableColumnList = [
 		{
