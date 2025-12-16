@@ -87,14 +87,14 @@ export interface UseListQueryReturn<TItem, TParams extends BaseListQueryParams =
 	isFetching: Ref<boolean>;
 	/** 错误信息 Error message */
 	error: Ref<Error | null>;
-	/** 刷新数据 Refresh data */
-	refetch: () => void;
+	/** 执行查询 Execute query */
+	doFetch: () => Promise<void>;
 	/** 更新查询参数 Update query parameters */
 	updateParams: (params: Partial<TParams>) => void;
 	/** 重置查询参数 Reset query parameters */
 	resetParams: () => void;
 	/** 原始 Query 对象 Original query object */
-	query: UseQueryReturnType<JsonVO<PageDTO<TItem>>, Error>;
+	tanStackQueryObject: UseQueryReturnType<JsonVO<PageDTO<TItem>>, Error>;
 }
 
 /** 默认每页大小 Default page size */
@@ -111,7 +111,7 @@ const DEFAULT_PAGE_INDEX = 1;
 export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 	options: UseListQueryOptions<TItem, TParams>,
 ): UseListQueryReturn<TItem, TParams> {
-	const { queryKeyPrefix, apiUrl, initialParams, enabled = true, staleTime = 5 * 60 * 1000 } = options;
+	const { queryKeyPrefix, apiUrl, initialParams, enabled = false, staleTime = 5 * 60 * 1000 } = options;
 
 	/** 初始参数对象 */
 	const defaultParams: TParams = {
@@ -155,7 +155,7 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 	const queryKey = computed(() => [queryKeyPrefix, JSON.stringify(queryParams.value)] as const);
 
 	/** TanStack Query 查询 */
-	const query = useQuery({
+	const tanStackQueryObject = useQuery({
 		queryKey: queryKey.value,
 		queryFn: async (): Promise<JsonVO<PageDTO<TItem>>> => {
 			const response = await http.post<JsonVO<PageDTO<TItem>>, TParams>(apiUrl, { data: queryParams.value });
@@ -168,32 +168,41 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 				} as JsonVO<PageDTO<TItem>>)
 			);
 		},
-		enabled: typeof enabled === "boolean" ? enabled : enabled,
+		enabled: enabled as boolean,
 		staleTime,
 	});
 
-	/** 监听参数变化时更新 queryKey */
-	watch(
-		queryParams,
-		() => {
-			console.log("参数变化了 开始请求", queryParams.value);
-			query.refetch();
-		},
-		{ deep: true },
-	);
+	// tanStackQueryObject.  ((data) => {
+	//   if (data?.code === 200 && data.data) {
+	//     tableData.value = data.data.list || [];
+	//     total.value = data.data.total || 0;
+	//   }
+	// });
 
+	/** 监听参数变化时更新 queryKey */
+	// 不再主动根据参数变化做处理 要求用户自己主动调用
+	// watch(
+	// 	queryParams,
+	// 	() => {
+	// 		console.log("参数变化了 开始请求", queryParams.value);
+	// 		query.refetch();
+	// 	},
+	// 	{ deep: true },
+	// );
+
+	// 不再主动根据参数变化做处理 要求用户自己主动调用
 	/** 监听数据变化，更新表格数据 */
-	watch(
-		() => query.data.value,
-		(newData) => {
-			if (newData?.code === 200 && newData.data) {
-				tableData.value = newData.data.list || [];
-				total.value = newData.data.total || 0;
-				console.log("数据变化了 更新表格数据", tableData.value, total.value);
-			}
-		},
-		{ immediate: true, deep: true },
-	);
+	// watch(
+	// 	() => query.data.value,
+	// 	(newData) => {
+	// 		if (newData?.code === 200 && newData.data) {
+	// 			tableData.value = newData.data.list || [];
+	// 			total.value = newData.data.total || 0;
+	// 			console.log("数据变化了 更新表格数据", tableData.value, total.value);
+	// 		}
+	// 	},
+	// 	{ immediate: true, deep: true },
+	// );
 
 	/** 更新查询参数 */
 	function updateParams(params: Partial<TParams>) {
@@ -203,14 +212,20 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 		};
 	}
 
-	/** 重置查询参数 */
+	/**
+	 * 重置查询参数
+	 * @description 用于搜索栏的重置按钮
+	 */
 	function resetParams() {
 		queryParams.value = { ...defaultParams };
 	}
 
-	/** 刷新数据 */
-	function refetch() {
-		query.refetch();
+	/**
+	 * 执行查询
+	 * @description
+	 */
+	async function doFetch() {
+		await tanStackQueryObject.refetch();
 	}
 
 	return {
@@ -220,13 +235,13 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 		pageSize: pageSize as unknown as Ref<number>,
 		totalPages,
 		queryParams,
-		isLoading: query.isLoading,
-		isFetching: query.isFetching,
-		error: query.error,
-		refetch,
+		isLoading: tanStackQueryObject.isLoading,
+		isFetching: tanStackQueryObject.isFetching,
+		error: tanStackQueryObject.error,
+		doFetch,
 		updateParams,
 		resetParams,
-		query,
+		tanStackQueryObject,
 	};
 }
 

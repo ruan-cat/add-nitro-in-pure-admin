@@ -19,10 +19,10 @@ export function useColumns() {
 		isLoading,
 		isFetching,
 		error,
-		refetch,
+		doFetch,
 		updateParams,
 		resetParams,
-		query,
+		tanStackQueryObject,
 	} = useWelcomeTableListQuery({
 		pageIndex: 1,
 		pageSize: 10,
@@ -89,33 +89,37 @@ export function useColumns() {
 
 	/** 分页配置 */
 	const pagination = ref<PaginationProps>({
-		// currentPage: pageIndex.value,
-		// pageSize: pageSize.value,
-		currentPage: 2,
-		pageSize: 7,
+		currentPage: pageIndex.value,
+		pageSize: pageSize.value,
+		// currentPage: 2,
+		// pageSize: 7,
 		total: total.value,
 		// FIXME: 页码数目不对
 		// total: 200,
 
-		// layout: "prev, pager, next",
 		size: "default",
 		pageSizes: [10, 15, 20, 50, 100],
 		align: "right",
 		background: true,
 	});
 
-	function onCurrentChange(page: number) {
-		console.log("onCurrentChange", page);
-		updateParams({ pageIndex: page, pageSize: pagination.value.pageSize });
-		refetch();
+	/** 页码变化 */
+	async function onCurrentChange(page: number) {
+		pageIndex.value = page;
+		console.log("页码变化", page);
+		await doFetch();
 	}
 
-	function onSizeChange(size: number) {
-		updateParams({ pageIndex: pagination.value.currentPage, pageSize: size });
-		refetch();
+	/** 页数变化 */
+	async function onSizeChange(size: number) {
+		pageSize.value = size;
+		console.log("页数变化", size);
+		await doFetch();
 	}
 
-	onMounted(() => {
+	onMounted(async () => {
+		// await delay(600);
+		await doFetch();
 		pagination.value.total = total.value;
 	});
 
