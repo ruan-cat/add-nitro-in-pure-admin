@@ -91,11 +91,7 @@ export function useColumns() {
 	const pagination = ref<PaginationProps>({
 		currentPage: pageIndex.value,
 		pageSize: pageSize.value,
-		// currentPage: 2,
-		// pageSize: 7,
 		total: total.value,
-		// FIXME: 页码数目不对
-		// total: 200,
 
 		size: "default",
 		pageSizes: [10, 15, 20, 50, 100],

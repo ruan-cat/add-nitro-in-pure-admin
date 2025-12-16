@@ -142,7 +142,6 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 		get: () => queryParams.value.pageSize,
 		set: (val) => {
 			queryParams.value.pageSize = val;
-			// queryParams.value.pageIndex = DEFAULT_PAGE_INDEX;
 		},
 	});
 
@@ -157,7 +156,6 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 	/** TanStack Query 查询 */
 	const tanStackQueryObject = useQuery({
 		queryKey: queryKey.value,
-		// queryKey: [queryKeyPrefix, queryParams.value.pageIndex, queryParams.value.pageSize],
 		queryFn: async (): Promise<JsonVO<PageDTO<TItem>>> => {
 			const response = await http.post<JsonVO<PageDTO<TItem>>, TParams>(apiUrl, { data: queryParams.value });
 			return (
@@ -174,7 +172,7 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 		staleTime,
 	});
 
-	const { data, isLoading, isError, isFetching, error } = tanStackQueryObject;
+	const { data, isLoading, isError, isFetching, error, refetch } = tanStackQueryObject;
 
 	/** 监听数据变化，更新表格数据 */
 	watch(
@@ -183,21 +181,13 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 			if (newData?.code === 200 && newData.data) {
 				tableData.value = newData.data.list || [];
 				total.value = newData.data.total || 0;
-				// console.log("数据变化了 更新表格数据", tableData.value, total.value);
 			}
 		},
 		{ immediate: true, deep: true },
 	);
 
-	// watch(  );
-	// tanStackQueryObject.  ((data) => {
-	//   if (data?.code === 200 && data.data) {
-	//     tableData.value = data.data.list || [];
-	//     total.value = data.data.total || 0;
-	//   }
-	// });
 	/** 监听参数变化时更新 queryKey */
-	// 不再主动根据参数变化做处理 要求用户自己主动调用
+	// 根据 queryKey 完成自动监听与触发
 	// watch(
 	// 	queryParams,
 	// 	() => {
@@ -228,15 +218,14 @@ export function useListQuery<TItem, TParams extends BaseListQueryParams>(
 	 * @description
 	 */
 	async function doFetch() {
-		// console.log("doFetch", queryParams.value);
-		await tanStackQueryObject.refetch();
+		await refetch();
 	}
 
 	return {
 		tableData,
 		total,
-		pageIndex: pageIndex as unknown as Ref<number>,
-		pageSize: pageSize as unknown as Ref<number>,
+		pageIndex,
+		pageSize,
 		totalPages,
 		queryParams,
 		isLoading,
