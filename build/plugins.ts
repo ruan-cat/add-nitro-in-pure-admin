@@ -68,5 +68,11 @@ export function getPluginsList(VITE_CDN: boolean, VITE_COMPRESSION: ViteCompress
 		removeConsole({ external: ["src/assets/iconfont/iconfont.js"] }),
 		// 打包分析
 		lifecycle === "report" ? visualizer({ open: true, brotliSize: true, filename: "report.html" }) : (null as any),
+
+		/**
+		 * 将项目一下子变成nuxt全栈项目的插件
+		 * @see https://v3.nitro.build/docs/quick-start#add-to-a-vite-project
+		 */
+		nitro(),
 	];
 }
