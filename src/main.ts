@@ -9,7 +9,7 @@ import { createApp, type Directive } from "vue";
 import { useVxeTable } from "@/plugins/vxeTable";
 import { useElementPlus } from "@/plugins/elementPlus";
 import { injectResponsiveStorage } from "@/utils/responsive";
-import { VueQueryPlugin, type VueQueryPluginOptions } from "@tanstack/vue-query";
+import { VueQueryPlugin, QueryClient, type VueQueryPluginOptions } from "@tanstack/vue-query";
 
 import Table from "@pureadmin/table";
 import PureDescriptions from "@pureadmin/descriptions";
@@ -29,7 +29,7 @@ const app = createApp(App);
 
 /** TanStack Query 配置选项 */
 const vueQueryPluginOptions: VueQueryPluginOptions = {
-	queryClientConfig: {
+	queryClient: new QueryClient({
 		defaultOptions: {
 			queries: {
 				/** 数据保持新鲜时间（5分钟） Stale time */
@@ -42,7 +42,7 @@ const vueQueryPluginOptions: VueQueryPluginOptions = {
 				refetchOnWindowFocus: false,
 			},
 		},
-	},
+	}),
 };
 
 // 自定义指令
