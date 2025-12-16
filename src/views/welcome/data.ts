@@ -108,6 +108,15 @@ const progressData = [
 	},
 ].reverse();
 
+interface WelcomeTableItem {
+	id: number;
+	requiredNumber: number;
+	questionNumber: number;
+	resolveNumber: number;
+	satisfaction: number;
+	date: string;
+}
+
 /** 数据统计 */
 const tableData = Array.from({ length: 30 }).map((_, index) => {
 	return {

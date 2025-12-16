@@ -6,9 +6,31 @@ import ThumbUp from "~icons/ri/thumb-up-line";
 import Hearts from "~icons/ri/hearts-line";
 import Empty from "./empty.svg?component";
 
+import { useWelcomeTableListQuery } from "@/api/welcome-table";
+
 export function useColumns() {
-	const dataList = ref([]);
-	const loading = ref(true);
+	const {
+		tableData,
+		total,
+		pageIndex,
+		pageSize,
+		totalPages,
+		queryParams,
+		isLoading,
+		isFetching,
+		error,
+		refetch,
+		updateParams,
+		resetParams,
+		query,
+	} = useWelcomeTableListQuery({
+		pageIndex: 1,
+		pageSize: 10,
+	});
+
+	const dataList = tableData;
+	const loading = isLoading;
+
 	const columns: TableColumnList = [
 		{
 			sortable: true,
@@ -67,25 +89,21 @@ export function useColumns() {
 
 	/** 分页配置 */
 	const pagination = reactive<PaginationProps>({
-		pageSize: 10,
-		currentPage: 1,
+		pageSize: pageSize.value,
+		currentPage: pageIndex.value,
 		layout: "prev, pager, next",
-		total: 0,
+		total: total.value,
 		align: "center",
 	});
 
 	function onCurrentChange(page: number) {
 		console.log("onCurrentChange", page);
-		loading.value = true;
-		delay(300).then(() => {
-			loading.value = false;
-		});
+		updateParams({ pageIndex: page });
+		refetch();
 	}
 
 	onMounted(() => {
-		dataList.value = tableData;
-		pagination.total = dataList.value.length;
-		loading.value = false;
+		pagination.total = total.value;
 	});
 
 	return {
